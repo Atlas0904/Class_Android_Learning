@@ -1,1 +1,2 @@
-Hello, this is a test for github. This class teach about android develope
+Hello, this is a test for github. 
+Ｈere is the send version of edite
