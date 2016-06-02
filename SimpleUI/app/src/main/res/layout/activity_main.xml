@@ -12,6 +12,68 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change to some word you would like to"
+        android:text="This is for HW2"
         android:id="@+id/textView" />
+
+    <Button
+        android:text="Click"
+        android:id="@+id/buttonShow"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/button_draw"
+        android:onClick="onClickFunction"
+        android:scaleType="fitXY"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:textSize="12dp"
+        android:textColor="@android:color/holo_orange_dark"
+        android:layout_below="@+id/hideSexCheckBox" />
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/radioGroup"
+        android:layout_alignRight="@+id/editText"
+        android:layout_alignEnd="@+id/editText"
+        android:orientation="horizontal"
+        android:layout_below="@+id/editText">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Male"
+            android:id="@+id/MaleRadioButton"
+            android:layout_gravity="right"
+            android:checked="true"
+            android:drawableRight="@drawable/male_icon_32_32" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Female"
+            android:id="@+id/FemaleRadioButton"
+            android:checked="false"
+            android:drawableRight="@drawable/female_icon_32_32" />
+    </RadioGroup>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide sex"
+        android:id="@+id/hideSexCheckBox"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="false"
+        android:layout_below="@+id/radioGroup" />
+
 </RelativeLayout>
