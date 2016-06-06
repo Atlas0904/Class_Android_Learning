@@ -41,18 +41,33 @@ public class OrderAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        Holder holder;
+
         if (convertView == null) {  // 如果還沒有 convertView 先 new 出來
             convertView = inflater.inflate(R.layout.list_view_order_item, null);
-        }
+            TextView drinkNameTextView = (TextView) convertView.findViewById(R.id.drinkNameTextView);
+            TextView noteNameTextView = (TextView) convertView.findViewById(R.id.noteTextView);
 
-        TextView drinkNameTextView = (TextView) convertView.findViewById(R.id.drinkNameTextView);
-        TextView noteNameTextView = (TextView) convertView.findViewById(R.id.noteTextView);
+            holder = new Holder();
+            holder.drinkName = drinkNameTextView;
+            holder.note = noteNameTextView;
+
+            convertView.setTag(holder);
+        } else {
+            holder = (Holder) convertView.getTag();
+        }
 
         Order order = orders.get(position);
 
-        drinkNameTextView.setText(order.drinkName);
-        noteNameTextView.setText(order.note);
+        holder.drinkName.setText(order.drinkName);
+        holder.note.setText(order.note);
 
         return convertView;
+    }
+
+    // Cache
+    class Holder {
+        TextView drinkName;
+        TextView note;
     }
 }

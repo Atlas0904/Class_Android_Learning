@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SimpleAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     EditText editText;
     RadioGroup radioGroup;
     ListView listView;
+    Spinner spinner;
 
     ArrayList<Order> orders = new ArrayList<>();
 
@@ -40,8 +42,10 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) findViewById(R.id.button);
         editText = (EditText) findViewById(R.id.editText);
         listView = (ListView) findViewById(R.id.listView);
+        spinner = (Spinner) findViewById(R.id.spinner);
 
         setupListView();
+        setupSpinner();
 
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -63,6 +67,12 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void setupSpinner() {
+        String[] data = getResources().getStringArray(R.array.storeInfo);  // R.array
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
+        spinner.setAdapter(adapter);
     }
 
     private void setupListView() {
