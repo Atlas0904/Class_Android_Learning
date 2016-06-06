@@ -9,10 +9,15 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     RadioGroup radioGroup;
     ListView listView;
 
-    ArrayList<String> drinks = new ArrayList<>();
+    ArrayList<Order> orders = new ArrayList<>();
 
     String drinkName = "Black Tea";
 
@@ -42,12 +47,8 @@ public class MainActivity extends AppCompatActivity {
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                String s = textView.getText().toString();
-                if (checkedId == R.id.blackTeaRadioButton) {
-                    drinkName = "Black Tea";
-                } else if (checkedId == R.id.greenTeaRadioButton) {
-                    drinkName = "Green Tea";
-                }
+                RadioButton r = (RadioButton) findViewById(checkedId);
+                drinkName = r.getText().toString();
             }
         });
 
@@ -65,9 +66,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupListView() {
-        //String[] data = new String[]{"Green tea","Black tea", "Oolong tea", "White tea", "Pu-erh tea ", "Peach tea"};
-        ArrayAdapter<String> adpter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, drinks);
-        listView.setAdapter(adpter);
+//        String[] data = new String[]{"Green tea","Black tea", "Oolong tea", "White tea", "Pu-erh tea ", "Peach tea"};
+//        ArrayAdapter<String> adapter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, data);
+
+        // Customize list view
+        /*
+        List<Map<String, String>> data = new ArrayList<>();
+        for (int i=0; i < orders.size(); i++) {
+            Order order = orders.get(i);
+            Map<String, String> item = new HashMap<>();
+            item.put("note", order.note);
+            item.put("drinkName", order.drinkName);
+            data.add(item);
+        }
+        String[] from = {"note", "drinkName"};
+        int[] to = {R.id.noteTextView, R.id.drinkNameTextView};
+
+        SimpleAdapter adapter = new SimpleAdapter(this, data, R.layout.list_view_order_item, from, to);
+        */
+
+        OrderAdapter adapter = new OrderAdapter(this, orders);
+        listView.setAdapter(adapter);
     }
 
     public void onClickFunction(View view) {
@@ -75,8 +94,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void changeTextView() {
+
         String note = editText.getText().toString();
-        drinks.add(drinkName);
+        orders.add(new Order(drinkName, note));
 
         textView.setText(drinkName);
         editText.setText("");
