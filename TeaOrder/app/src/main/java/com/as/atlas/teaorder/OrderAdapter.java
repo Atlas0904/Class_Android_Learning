@@ -8,6 +8,8 @@ import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 /**
@@ -47,10 +49,13 @@ public class OrderAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.list_view_order_item, null);
             TextView drinkNameTextView = (TextView) convertView.findViewById(R.id.drinkNameTextView);
             TextView noteNameTextView = (TextView) convertView.findViewById(R.id.noteTextView);
+            TextView storeInfoTextView = (TextView) convertView.findViewById(R.id.storeTextView);
 
             holder = new Holder();
             holder.drinkName = drinkNameTextView;
             holder.note = noteNameTextView;
+            holder.storeInfo = storeInfoTextView;
+
 
             convertView.setTag(holder);
         } else {
@@ -61,6 +66,7 @@ public class OrderAdapter extends BaseAdapter {
 
         holder.drinkName.setText(order.drinkName);
         holder.note.setText(order.note);
+        holder.storeInfo.setText(order.storeInfo);
 
         return convertView;
     }
@@ -69,5 +75,6 @@ public class OrderAdapter extends BaseAdapter {
     class Holder {
         TextView drinkName;
         TextView note;
+        TextView storeInfo;
     }
 }

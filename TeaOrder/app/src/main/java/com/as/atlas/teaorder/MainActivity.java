@@ -106,7 +106,8 @@ public class MainActivity extends AppCompatActivity {
     public void changeTextView() {
 
         String note = editText.getText().toString();
-        orders.add(new Order(drinkName, note));
+        String storeInfo = (String) spinner.getSelectedItem();
+        orders.add(new Order(drinkName, note, storeInfo));
 
         textView.setText(drinkName);
         editText.setText("");
