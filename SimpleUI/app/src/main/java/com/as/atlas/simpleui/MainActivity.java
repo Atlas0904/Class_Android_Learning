@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onClickFunction(View view) {
         name = editText.getText().toString();
-        sexual = selectedSexual;
         changeTextView();
         editText.setText("");
     }
