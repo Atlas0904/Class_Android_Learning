@@ -43,21 +43,45 @@ public class ListViewExchangeRateAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        Holder holder = null;
+        if (convertView == null) {
+            convertView = layoutInflater.inflate(R.layout.list_view_exchange_rate, parent, false);
+            holder = new Holder(
+                    (TextView) convertView.findViewById(R.id.TextViewCurrency),
+                    (TextView) convertView.findViewById(R.id.TextViewCashBuy),
+                    (TextView) convertView.findViewById(R.id.TextViewCashSold),
+                    (TextView) convertView.findViewById(R.id.TextViewSpotBuy),
+                    (TextView) convertView.findViewById(R.id.TextViewSpotSold)
+            );
+            convertView.setTag(holder);
+        } else {
+            holder = (Holder) convertView.getTag();
+        }
         RateItem rateItem = (RateItem) rateList.get(position);
-        convertView = layoutInflater.inflate(R.layout.list_view_exchange_rate, parent, false);
-        TextView textViewCurrency = (TextView) convertView.findViewById(R.id.TextViewCurrency);
-        TextView textViewCashBuy = (TextView) convertView.findViewById(R.id.TextViewCashBuy);
-        TextView textViewCashSold = (TextView) convertView.findViewById(R.id.TextViewCashSold);
-        TextView textViewSpotBuy = (TextView) convertView.findViewById(R.id.TextViewSpotBuy);
-        TextView textViewSpotSold = (TextView) convertView.findViewById(R.id.TextViewSpotSold);
 
-        textViewCurrency.setText(rateItem.getCurrency());
-        textViewCashBuy.setText(convertDoubleToString(rateItem.getCashBuyRate()));
-        textViewCashSold.setText(convertDoubleToString(rateItem.getCashSoldRate()));
-        textViewSpotBuy.setText(convertDoubleToString(rateItem.getSpotBuyRate()));
-        textViewSpotSold.setText(convertDoubleToString(rateItem.getSpotSoldRate()));
+        holder.textViewCurrency.setText(rateItem.getCurrency());
+        holder.textViewCashBuy.setText(convertDoubleToString(rateItem.getCashBuyRate()));
+        holder.textViewCashSold.setText(convertDoubleToString(rateItem.getCashSoldRate()));
+        holder.textViewSpotBuy.setText(convertDoubleToString(rateItem.getSpotBuyRate()));
+        holder.textViewSpotSold.setText(convertDoubleToString(rateItem.getSpotSoldRate()));
 
         return convertView;
+    }
+
+    private static class Holder {
+        TextView textViewCurrency;
+        TextView textViewCashBuy;
+        TextView textViewCashSold;
+        TextView textViewSpotBuy;
+        TextView textViewSpotSold;
+
+        public Holder(TextView textViewCurrency, TextView textViewCashBuy, TextView textViewCashSold, TextView textViewSpotBuy, TextView textViewSpotSold) {
+            this.textViewCurrency = textViewCurrency;
+            this.textViewCashBuy = textViewCashBuy;
+            this.textViewCashSold = textViewCashSold;
+            this.textViewSpotBuy = textViewSpotBuy;
+            this.textViewSpotSold = textViewSpotSold;
+        }
     }
 
     private String convertDoubleToString(double d) {

@@ -52,8 +52,7 @@
             android:text="現金匯率"
             android:id="@+id/CashRateHeader"
             android:layout_span="2"
-            android:layout_gravity="center"
-            android:textStyle="bold" />
+            android:layout_gravity="center"/>
 
         <TextView
             android:layout_width="wrap_content"
