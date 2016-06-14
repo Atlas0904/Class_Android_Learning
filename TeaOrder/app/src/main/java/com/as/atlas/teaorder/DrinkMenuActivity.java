@@ -1,6 +1,8 @@
 package com.as.atlas.teaorder;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,25 +52,34 @@ public class DrinkMenuActivity extends AppCompatActivity {
         listViewDrinkList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                log("onItemClick.");
                 DrinkAdapter drinkAdapter = (DrinkAdapter) parent.getAdapter();
                 Drink drink = (Drink) drinkAdapter.getItem(position);
-                drinkOrders.add(drink);
+                if (drinkOrders.contains(drink)) {
+                    drink.addOne();
+                    log("drink add one. drink=" + drink);
+                } else {
+                    drinkOrders.add(drink);
+                    log("drink no contain. drink=" + drink);
+                }
+                setupDrinkListView();
                 updateTotalPrice(drinkOrders);
             }
         });
     }
 
     private void updateTotalPrice(ArrayList<Drink> drinkOrders) {
+
         int total = 0;
         for (Drink drink: drinkOrders) {
-            total += drink.mediumCupPrice;
+            total += (drink.mediumCupPrice * drink.num);
         }
         textViewPrice.setText(String.valueOf(total));
     }
 
     private void setDrinkData() {
         for (int i = 0 ; i < drinkNames.length; i++) {
-            Drink drink = new Drink(drinkNames[i], mediumCupPrice[i], largeCupPrice[i], imageId[i]);
+            Drink drink = new Drink(drinkNames[i], mediumCupPrice[i], largeCupPrice[i], 0, imageId[i]);
             drinks.add(drink);
         }
     }
@@ -78,17 +90,47 @@ public class DrinkMenuActivity extends AppCompatActivity {
     }
 
     public void onClickOKButton(View view) {
-        Intent intent = new Intent();
-
-        JSONArray array = new JSONArray();
-        for (Drink drink: drinkOrders) {
-            JSONObject obj = drink.getJsonData();
-            array.put(obj);
+        String orderList="";
+        for (Drink drink : drinkOrders) {
+            orderList += drink.getOrderedFormat();
         }
+        showOrderDialog(orderList);
+    }
 
-        intent.putExtra("result", array.toString());
-        setResult(RESULT_OK, intent);
-        finish();   // 會回去 call main onActivityResult
+    public void showOrderDialog(String orderList) {
+        new AlertDialog.Builder(this)
+                .setTitle("您的訂單是：")
+                .setMessage("訂單總金額:" + textViewPrice.getText().toString() +"\n" + orderList)
+                .setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "訂購完成", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent();
+
+                        JSONArray array = new JSONArray();
+                        for (Drink drink: drinkOrders) {
+                            JSONObject obj = drink.getJsonData();
+                            array.put(obj);
+                        }
+
+                        intent.putExtra("result", array.toString());
+                        setResult(RESULT_OK, intent);
+                        finish();   // 會回去 call main onActivityResult
+                    }
+                })
+                .setNegativeButton("稍後決定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "幫你存到購物車囉!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNeutralButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "歡迎再看看歐", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
     }
 
 

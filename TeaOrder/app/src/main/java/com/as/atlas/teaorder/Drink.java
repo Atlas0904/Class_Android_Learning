@@ -15,13 +15,24 @@ public class Drink {
     String name;
     int mediumCupPrice;
     int largeCupPrice;
+    int num;
     int imageId;
 
-    public Drink(String name, int mediumCupPrice, int largeCupPrice, int imageId) {
+    public Drink(String name, int mediumCupPrice, int largeCupPrice, int num, int imageId) {
         this.name = name;
         this.mediumCupPrice = mediumCupPrice;
         this.largeCupPrice = largeCupPrice;
+        this.num = num;
         this.imageId = imageId;
+
+    }
+
+    public void addOne() {
+        this.num++;
+    }
+
+    public void addNum(int num) {
+        this.num += num;
     }
 
     public JSONObject getJsonData() {   // 透過 Json 封裝 data
@@ -34,5 +45,18 @@ public class Drink {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    public String getOrderedFormat() {
+        return "" + name + "\t數量:" + num + "\n";
+    }
+
+    public String toString() {
+        return "Drink: " +
+                "Name: " + name +
+                "Price(M):" + mediumCupPrice +
+                "Price(L):" + largeCupPrice +
+                "Numbers:" + num +
+                "(imageId:)" + imageId;
     }
 }

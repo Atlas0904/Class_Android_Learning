@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -52,6 +53,7 @@ public class DrinkAdapter extends BaseAdapter {
             holder.textViewMediumCupPrice = (TextView) convertView.findViewById(R.id.textViewMediumPrice);
             holder.textViewLargeCupPrice = (TextView) convertView.findViewById(R.id.textViewLargePrice);
             holder.imageViewDrinkImage = (ImageView) convertView.findViewById(R.id.imageViewDrinkImage);
+            holder.editTextDrinkNum = (EditText) convertView.findViewById(R.id.editTextDrinkNum);
 
             convertView.setTag(holder);
         } else {
@@ -62,6 +64,7 @@ public class DrinkAdapter extends BaseAdapter {
         holder.textViewDrinkName.setText(drink.name);
         holder.textViewMediumCupPrice.setText(String.valueOf(drink.mediumCupPrice));
         holder.textViewLargeCupPrice.setText(String.valueOf(drink.largeCupPrice));
+        holder.editTextDrinkNum.setText(String.valueOf(drink.num));
         holder.imageViewDrinkImage.setImageResource(drink.imageId);
 
         return convertView;
@@ -72,5 +75,6 @@ public class DrinkAdapter extends BaseAdapter {
         TextView textViewMediumCupPrice;
         TextView textViewLargeCupPrice;
         ImageView imageViewDrinkImage;
+        EditText editTextDrinkNum;
     }
 }

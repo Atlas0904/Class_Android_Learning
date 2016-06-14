@@ -59,4 +59,28 @@
         android:layout_toRightOf="@+id/textView4"
         android:layout_toEndOf="@+id/textView4"
         android:layout_marginLeft="10dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextDrinkNum"
+
+        android:focusable="false"
+        android:clickable="false"
+        android:focusableInTouchMode="false"
+
+        android:layout_alignBottom="@+id/imageViewDrinkImage"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="數量"
+        android:id="@+id/textView5"
+        android:layout_alignBaseline="@+id/editTextDrinkNum"
+        android:layout_alignBottom="@+id/editTextDrinkNum"
+        android:layout_toLeftOf="@+id/editTextDrinkNum"
+        android:layout_toStartOf="@+id/editTextDrinkNum" />
+
 </RelativeLayout>
