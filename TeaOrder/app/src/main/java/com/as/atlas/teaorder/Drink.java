@@ -35,6 +35,10 @@ public class Drink {
         this.num += num;
     }
 
+    public void resetNum() {
+        this.num = 0;
+    }
+
     public JSONObject getJsonData() {   // 透過 Json 封裝 data
         JSONObject jsonObject = new JSONObject();
         try {

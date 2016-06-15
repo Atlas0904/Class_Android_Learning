@@ -66,6 +66,30 @@ public class DrinkMenuActivity extends AppCompatActivity {
                 updateTotalPrice(drinkOrders);
             }
         });
+
+        listViewDrinkList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                DrinkAdapter drinkAdapter = (DrinkAdapter) parent.getAdapter();
+                Drink drink = (Drink) drinkAdapter.getItem(position);
+                if (drinkOrders.contains(drink)) {
+                    drink.resetNum();
+                    log("drink num reset. drink=" + drink);
+                }
+                setupDrinkListView();
+                updateTotalPrice(drinkOrders);
+
+                return true;
+            }
+        });
+    }
+
+    private void resetOrderList() {
+        for (Drink drink: drinkOrders) {
+            drink.resetNum();
+        }
+        updateTotalPrice(drinkOrders);
+        setupDrinkListView();
     }
 
     private void updateTotalPrice(ArrayList<Drink> drinkOrders) {
@@ -90,17 +114,21 @@ public class DrinkMenuActivity extends AppCompatActivity {
     }
 
     public void onClickOKButton(View view) {
+        showOrderDialog();
+    }
+
+    public void showOrderDialog() {
+        String totalPrice = textViewPrice.getText().toString();
         String orderList="";
         for (Drink drink : drinkOrders) {
             orderList += drink.getOrderedFormat();
         }
-        showOrderDialog(orderList);
-    }
 
-    public void showOrderDialog(String orderList) {
+        final String finalOrderList = orderList;
         new AlertDialog.Builder(this)
                 .setTitle("您的訂單是：")
-                .setMessage("訂單總金額:" + textViewPrice.getText().toString() +"\n" + orderList)
+                .setMessage("訂單總金額:" + totalPrice +"\n"
+                                         + orderList)
                 .setPositiveButton("確認", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -127,6 +155,7 @@ public class DrinkMenuActivity extends AppCompatActivity {
                 .setNeutralButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        resetOrderList();
                         Toast.makeText(getApplicationContext(), "歡迎再看看歐", Toast.LENGTH_SHORT).show();
                     }
                 })
