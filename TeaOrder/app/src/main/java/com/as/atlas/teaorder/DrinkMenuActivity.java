@@ -1,7 +1,9 @@
 package com.as.atlas.teaorder;
 
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +19,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class DrinkMenuActivity extends AppCompatActivity {
+public class DrinkMenuActivity extends AppCompatActivity
+        implements DrinkOrderDialogFragment.OnFragmentInteractionListener {
 
 
     // UI
@@ -53,17 +56,21 @@ public class DrinkMenuActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 log("onItemClick.");
-                DrinkAdapter drinkAdapter = (DrinkAdapter) parent.getAdapter();
-                Drink drink = (Drink) drinkAdapter.getItem(position);
-                if (drinkOrders.contains(drink)) {
-                    drink.addOne();
-                    log("drink add one. drink=" + drink);
-                } else {
-                    drinkOrders.add(drink);
-                    log("drink no contain. drink=" + drink);
-                }
-                setupDrinkListView();
-                updateTotalPrice(drinkOrders);
+//                DrinkAdapter drinkAdapter = (DrinkAdapter) parent.getAdapter();
+//                Drink drink = (Drink) drinkAdapter.getItem(position);
+//                if (drinkOrders.contains(drink)) {
+//                    drink.addOne();
+//                    log("drink add one. drink=" + drink);
+//                } else {
+//                    drinkOrders.add(drink);
+//                    log("drink no contain. drink=" + drink);
+//                }
+//                setupDrinkListView();
+//                updateTotalPrice(drinkOrders);
+
+                Drink drink = (Drink) parent.getAdapter().getItem(position);
+                showDetailCheckMenu(drink);
+
             }
         });
 
@@ -82,6 +89,28 @@ public class DrinkMenuActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void showDetailCheckMenu(Drink drink) {
+        android.app.FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+
+        DrinkOrder drinkOrder = new DrinkOrder();
+        drinkOrder.mediumCupPrice = drink.mediumCupPrice;
+        drinkOrder.largeCupPrice = drink.largeCupPrice;
+        drinkOrder.drinkName = drink.name;
+
+        DrinkOrderDialogFragment drinkOrderDialogFragment = DrinkOrderDialogFragment.newInstance(drinkOrder);
+
+        drinkOrderDialogFragment.show(ft, "DrinkOrderDialog");
+
+//        // 1st demo
+//        ft.replace(R.id.drinkMenuRelativeLayout, dialogFragment); // 因為有可能重複call
+//        ft.addToBackStack(null);
+//
+//        ft.commit();
+
     }
 
     private void resetOrderList() {
