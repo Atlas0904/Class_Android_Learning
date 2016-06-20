@@ -3,6 +3,7 @@ package com.as.atlas.googlemapfollowwe;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -32,6 +33,8 @@ public class MapsActivity extends FragmentActivity
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    private static final String TAG = "Atlas";
+
     private GoogleMap mMap;
 
 
@@ -46,6 +49,8 @@ public class MapsActivity extends FragmentActivity
     // 顯示目前與儲存位置的標記物件
     private Marker currentMarker, itemMarker;
 
+    private LocationManager locationManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,10 +60,33 @@ public class MapsActivity extends FragmentActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
         configGoogleApiClient();
         configLocationRequest();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        enableLocationUpdate();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //disableLocationUpdate();
+    }
+
+    private void setUpMap() {
+        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (location == null) {
+            locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+    }
+
+    private void enableLocationUpdate() {
+    }
 
     /**
      * Manipulates the map once available.
@@ -82,13 +110,13 @@ public class MapsActivity extends FragmentActivity
         */
 
 
-        /*
+
         // 建立位置的座標物件
         LatLng place = new LatLng(25.033408, 121.564099);
         // 移動地圖
         moveMap(place);
         addMarker(place, "Hello!", " Google Maps v2!");
-*/
+
     }
 
     // 移動地圖到參數指定的位置
@@ -119,14 +147,18 @@ public class MapsActivity extends FragmentActivity
     }
 
     private void configGoogleApiClient() {
+        log("configGoogleApiClient");
+
         googleApiClient = new GoogleApiClient.Builder(this).
                 addConnectionCallbacks(this).
                 addOnConnectionFailedListener(this).
                 addApi(LocationServices.API).
                 build();
+        googleApiClient.connect();
     }
 
     private void configLocationRequest() {
+        log("configLocationRequest");
         locationRequest = new LocationRequest();
         // 設定讀取位置資訊的間隔時間為一秒（1000ms）
         locationRequest.setInterval(1000);
@@ -138,6 +170,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        log("onConnected Bundle: " + bundle);
         // 已經連線到Google Services
         // 啟動位置更新服務
         // 位置資訊更新的時候，應用程式會自動呼叫LocationListener.onLocationChanged
@@ -168,6 +201,8 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        log("onConnectionFailed connectionResult: " + connectionResult);
+
         // Google Services連線失敗
         // ConnectionResult參數是連線失敗的資訊
 
@@ -184,6 +219,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onLocationChanged(Location location) {
+        log("onLocationChanged location: " + location);
         // 位置改變
         // Location參數是目前的位置
 
@@ -203,5 +239,8 @@ public class MapsActivity extends FragmentActivity
 
         // 移動地圖到目前的位置
         moveMap(latLng);
+    }
+    private void log(String s) {
+        Log.d(TAG, s);
     }
 }
