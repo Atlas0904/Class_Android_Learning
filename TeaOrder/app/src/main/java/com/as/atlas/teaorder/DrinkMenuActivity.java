@@ -3,7 +3,6 @@ package com.as.atlas.teaorder;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,7 +19,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class DrinkMenuActivity extends AppCompatActivity
-        implements DrinkOrderDialogFragment.OnFragmentInteractionListener {
+        implements DrinkOrderDialogFragment.OnDrinkOrderListener {
 
 
     // UI
@@ -28,7 +27,7 @@ public class DrinkMenuActivity extends AppCompatActivity
     TextView textViewPrice;
 
     ArrayList<Drink> drinks = new ArrayList<>();
-    ArrayList<Drink> drinkOrders = new ArrayList<>();
+    ArrayList<DrinkOrder> drinkOrders = new ArrayList<>();
 
     // Set data
     private static final String TAG = DrinkMenuActivity.class.getName();
@@ -40,6 +39,23 @@ public class DrinkMenuActivity extends AppCompatActivity
             R.drawable.drink_cola,
             R.drawable.drink_milk_tea,
             R.drawable.drink_bubble_milk_tea};
+
+    @Override
+    public void onDrinkOrderFinished(DrinkOrder drinkOrder) {
+        for (int i = 0; i < drinkOrders.size(); i++) {
+            if (drinkOrders.get(i).drinkName.equals(drinkOrder.drinkName)) {
+                drinkOrders.set(i, drinkOrder);
+                updateTotalPrice();
+            }
+        }
+        drinkOrders.add(drinkOrder);
+        updateTotalPrice();
+
+    }
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +100,7 @@ public class DrinkMenuActivity extends AppCompatActivity
                     log("drink num reset. drink=" + drink);
                 }
                 setupDrinkListView();
-                updateTotalPrice(drinkOrders);
+                updateTotalPrice();
 
                 return true;
             }
@@ -95,14 +111,24 @@ public class DrinkMenuActivity extends AppCompatActivity
         android.app.FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
 
-
         DrinkOrder drinkOrder = new DrinkOrder();
-        drinkOrder.mediumCupPrice = drink.mediumCupPrice;
-        drinkOrder.largeCupPrice = drink.largeCupPrice;
-        drinkOrder.drinkName = drink.name;
+        boolean found = false;
+
+        for (DrinkOrder order: drinkOrders) {
+            if (order.drinkName.equals(drink.name)) {
+                drinkOrder = order;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            drinkOrder.mediumCupPrice = drink.mediumCupPrice;
+            drinkOrder.largeCupPrice = drink.largeCupPrice;
+            drinkOrder.drinkName = drink.name;
+        }
 
         DrinkOrderDialogFragment drinkOrderDialogFragment = DrinkOrderDialogFragment.newInstance(drinkOrder);
-
         drinkOrderDialogFragment.show(ft, "DrinkOrderDialog");
 
 //        // 1st demo
@@ -113,19 +139,18 @@ public class DrinkMenuActivity extends AppCompatActivity
 
     }
 
-    private void resetOrderList() {
-        for (Drink drink: drinkOrders) {
-            drink.resetNum();
-        }
-        updateTotalPrice(drinkOrders);
-        setupDrinkListView();
-    }
+//    private void resetOrderList() {
+//        for (Drink drink: drinkOrders) {
+//            drink.resetNum();
+//        }
+//        updateTotalPrice(drinkOrders);
+//        setupDrinkListView();
+//    }
 
-    private void updateTotalPrice(ArrayList<Drink> drinkOrders) {
-
+    private void updateTotalPrice() {
         int total = 0;
-        for (Drink drink: drinkOrders) {
-            total += (drink.mediumCupPrice * drink.num);
+        for (DrinkOrder drinkOrder: drinkOrders) {
+            total += (drinkOrder.mediumCupPrice * drinkOrder.mediumCupNum + drinkOrder.largeCupPrice * drinkOrder.largeCupNum);
         }
         textViewPrice.setText(String.valueOf(total));
     }
@@ -149,11 +174,11 @@ public class DrinkMenuActivity extends AppCompatActivity
     public void showOrderDialog() {
         String totalPrice = textViewPrice.getText().toString();
         String orderList="";
-        for (Drink drink : drinkOrders) {
-            orderList += drink.getOrderedFormat();
-        }
-
-        final String finalOrderList = orderList;
+//        for (Drink drink : drinkOrders) {
+//            orderList += drink.getOrderedFormat();
+//        }
+//
+//        final String finalOrderList = orderList;
         new AlertDialog.Builder(this)
                 .setTitle("您的訂單是：")
                 .setMessage("訂單總金額:" + totalPrice +"\n"
@@ -165,12 +190,13 @@ public class DrinkMenuActivity extends AppCompatActivity
                         Intent intent = new Intent();
 
                         JSONArray array = new JSONArray();
-                        for (Drink drink: drinkOrders) {
+                        for (DrinkOrder drink: drinkOrders) {
                             JSONObject obj = drink.getJsonData();
                             array.put(obj);
                         }
 
                         intent.putExtra("result", array.toString());
+                        log(array.toString());
                         setResult(RESULT_OK, intent);
                         finish();   // 會回去 call main onActivityResult
                     }
@@ -184,7 +210,7 @@ public class DrinkMenuActivity extends AppCompatActivity
                 .setNeutralButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        resetOrderList();
+                        //resetOrderList();
                         Toast.makeText(getApplicationContext(), "歡迎再看看歐", Toast.LENGTH_SHORT).show();
                     }
                 })

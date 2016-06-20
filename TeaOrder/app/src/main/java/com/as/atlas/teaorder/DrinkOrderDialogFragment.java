@@ -11,14 +11,16 @@ import android.os.Bundle;
 //import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.NumberPicker;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link DrinkOrderDialogFragment.OnFragmentInteractionListener} interface
+ * {@link OnDrinkOrderListener} interface
  * to handle interaction events.
  * Use the {@link DrinkOrderDialogFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -33,9 +35,15 @@ public class DrinkOrderDialogFragment extends DialogFragment {
     private String mParam1;
     private String mParam2;   // Keep to know fragment can bring multi argments
 
-    private DrinkOrder drinkOrder;
+    // UI Component
+    NumberPicker numberPickerMedium;
+    NumberPicker numberPickerLarge;
+    RadioGroup radioGroupIce;
+    RadioGroup radioGroupSugar;
+    EditText editTextNote;
 
-    private OnFragmentInteractionListener mListener;
+    private DrinkOrder drinkOrder;
+    private OnDrinkOrderListener mListener;
 
     public DrinkOrderDialogFragment() {
         // Required empty public constructor
@@ -63,17 +71,26 @@ public class DrinkOrderDialogFragment extends DialogFragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             drinkOrder = DrinkOrder.newInstanceWithData(mParam1);
         }
-
+        
+        
         LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
         View root = layoutInflater.inflate(R.layout.fragment_drink_order_dialog, null);
-
+        
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(root)
                 .setTitle(drinkOrder.drinkName)
                 .setPositiveButton("確定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        drinkOrder.mediumCupNum = numberPickerMedium.getValue();
+                        drinkOrder.largeCupNum = numberPickerLarge.getValue();
+                        drinkOrder.ice = getSelectedItemFromRadioGroup(radioGroupIce);
+                        drinkOrder.sugar = getSelectedItemFromRadioGroup(radioGroupSugar);
+                        drinkOrder.note = editTextNote.getText().toString();
+                        if (mListener != null) {
+                            mListener.onDrinkOrderFinished(drinkOrder);
+                        }
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -83,18 +100,30 @@ public class DrinkOrderDialogFragment extends DialogFragment {
                     }
                 });
 
-        NumberPicker numberPickerMedium = (NumberPicker) root.findViewById(R.id.numberPickerMediumCup);
+        
+         
+        numberPickerMedium = (NumberPicker) root.findViewById(R.id.numberPickerMediumCup);
         numberPickerMedium.setMaxValue(100);
         numberPickerMedium.setMinValue(0);
         numberPickerMedium.setValue(drinkOrder.mediumCupNum);
 
-        NumberPicker numberPickerLarge = (NumberPicker) root.findViewById(R.id.numberPickerLargeCup);
+        numberPickerLarge = (NumberPicker) root.findViewById(R.id.numberPickerLargeCup);
         numberPickerLarge.setMaxValue(100);
         numberPickerLarge.setMinValue(0);
         numberPickerLarge.setValue(drinkOrder.largeCupNum);
 
+        radioGroupIce = (RadioGroup) root.findViewById(R.id.radioGroupIce);
+        radioGroupSugar = (RadioGroup) root.findViewById(R.id.radioGroupSugar);
+        editTextNote = (EditText) root.findViewById(R.id.editTextNote);
+        
         return builder.create();
         //return super.onCreateDialog(savedInstanceState);
+    }
+    
+    private String getSelectedItemFromRadioGroup(RadioGroup rg) {
+        int id = rg.getCheckedRadioButtonId();
+        RadioButton rb = (RadioButton) rg.findViewById(id);
+        return rb.getText().toString();
     }
 
     // 不長出 OK, CANCEL
@@ -126,11 +155,11 @@ public class DrinkOrderDialogFragment extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;  // 透過 mListener 對  Activity 做溝通
+        if (context instanceof OnDrinkOrderListener) {
+            mListener = (OnDrinkOrderListener) context;  // 透過 mListener 對  Activity 做溝通
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnDrinkOrderListener");
         }
     }
 
@@ -150,8 +179,9 @@ public class DrinkOrderDialogFragment extends DialogFragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {  //如果Fragment 觸發事情 會透過什麼 interface 發給  ActivityMa
+    public interface OnDrinkOrderListener {  //如果Fragment 觸發事情 會透過什麼 interface 發給  ActivityMa
         // TODO: Update argument type and name
         //void onFragmentInteraction(Uri uri);   // For build pass
+        void onDrinkOrderFinished(DrinkOrder drinkOrder);
     }
 }

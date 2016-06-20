@@ -15,14 +15,14 @@ import org.json.JSONObject;
 public class DrinkOrder {
 
 
-    private static final String DRINK_NAME = "drinkName";
-    private static final String ICE = "ice";
-    private static final String SUGAR = "sugar";
-    private static final String NOTE = "note";
-    private static final String MEDIUM_CUP_NUM = "mediumCupNum";
-    private static final String LARGE_CUP_NUM = "largeCupNum";
-    private static final String MEDIUM_CUP_PRICE = "mediumCupPrice";
-    private static final String LARGE_CUP_PRICE = "largeCupPrice";
+    public static final String DRINK_NAME = "drinkName";
+    public static final String ICE = "ice";
+    public static final String SUGAR = "sugar";
+    public static final String NOTE = "note";
+    public static final String MEDIUM_CUP_NUM = "mediumCupNum";
+    public static final String LARGE_CUP_NUM = "largeCupNum";
+    public static final String MEDIUM_CUP_PRICE = "mediumCupPrice";
+    public static final String LARGE_CUP_PRICE = "largeCupPrice";
 
 
 

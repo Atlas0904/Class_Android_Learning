@@ -1,14 +1,16 @@
 package com.as.atlas.teaorder;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -47,13 +49,13 @@ public class OrderAdapter extends BaseAdapter {
 
         if (convertView == null) {  // 如果還沒有 convertView 先 new 出來
             convertView = inflater.inflate(R.layout.list_view_order_item, null);
-            TextView drinkNameTextView = (TextView) convertView.findViewById(R.id.drinkNameTextView);
-            TextView noteNameTextView = (TextView) convertView.findViewById(R.id.noteTextView);
-            TextView storeInfoTextView = (TextView) convertView.findViewById(R.id.storeTextView);
+            TextView drinkNumberTextView = (TextView) convertView.findViewById(R.id.drinkNumberTextView);
+            TextView noteTextView = (TextView) convertView.findViewById(R.id.noteTextView);
+            TextView storeInfoTextView = (TextView) convertView.findViewById(R.id.storeInfoTextView);
 
             holder = new Holder();
-            holder.drinkName = drinkNameTextView;
-            holder.note = noteNameTextView;
+            holder.drinkNumber = drinkNumberTextView;
+            holder.note = noteTextView;
             holder.storeInfo = storeInfoTextView;
 
 
@@ -63,8 +65,25 @@ public class OrderAdapter extends BaseAdapter {
         }
 
         Order order = orders.get(position);
+        int totalNumber = 0;
+        try {
+            JSONArray jsonArray = new JSONArray(order.menuResult);
+            Log.d("AAA", "menu=" + order.menuResult);
 
-        holder.drinkName.setText(order.drinkName);
+            Log.d("AAA", "length=" + jsonArray.length());
+            for (int i = 0; i < jsonArray.length(); i++) {
+
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                Log.d("AAA", "jsonObject=" + jsonObject);
+                totalNumber += (jsonObject.getInt(DrinkOrder.MEDIUM_CUP_NUM) + jsonObject.getInt(DrinkOrder.LARGE_CUP_NUM));
+                Log.d("AAA", "getView: totalNumber=" + totalNumber);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        holder.drinkNumber.setText(String.valueOf(totalNumber));
         holder.note.setText(order.note);
         holder.storeInfo.setText(order.storeInfo);
 
@@ -73,7 +92,7 @@ public class OrderAdapter extends BaseAdapter {
 
     // Cache
     class Holder {
-        TextView drinkName;
+        TextView drinkNumber;
         TextView note;
         TextView storeInfo;
     }

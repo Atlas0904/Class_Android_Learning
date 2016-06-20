@@ -51,7 +51,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose"
+        android:text="訂購"
         android:id="@+id/button"
         android:layout_below="@+id/radioGroup"
         android:layout_alignParentLeft="true"
@@ -77,7 +77,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ShowDrinkMenu"
+        android:text="顯示訂單"
         android:id="@+id/buttonShowDrinkMenu"
         android:layout_alignTop="@+id/button"
         android:layout_toRightOf="@+id/button"

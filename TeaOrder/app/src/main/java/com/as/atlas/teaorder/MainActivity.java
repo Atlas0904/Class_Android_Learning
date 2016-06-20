@@ -1,8 +1,12 @@
 package com.as.atlas.teaorder;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -26,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
     public static final int REQUEST_CODE_DRINK_MENU_ACTIVITY = 0;
+    public static final String SHARE_PREFERENCES_EDIT_VIEW = "edit_view";
 
     TextView textView;
     Button button;
@@ -35,8 +40,11 @@ public class MainActivity extends AppCompatActivity {
     Spinner spinner;
 
     ArrayList<Order> orders = new ArrayList<>();
-
     String drinkName = "Black Tea";
+    String menuResult = "";
+
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +61,15 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
         spinner = (Spinner) findViewById(R.id.spinner);
 
+        sharedPreferences = getSharedPreferences("setting", Context.MODE_APPEND);
+        editor = sharedPreferences.edit();
+
+
+        setupOrdersData();
         setupListView();
         setupSpinner();
+
+        editText.setText(sharedPreferences.getString(SHARE_PREFERENCES_EDIT_VIEW, ""));   // 2nd parameter default
 
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -68,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
         editText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
+                String text = editText.getText().toString();
+                editor.putString(SHARE_PREFERENCES_EDIT_VIEW, text);
+                editor.apply();   // apply 才會寫進去
+
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
                     onClickFunction(v);
                     return true;
@@ -76,12 +95,35 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        textView.setText(sharedPreferences.getString(SHARE_PREFERENCES_EDIT_VIEW,""));
+        textView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                editor.putString("textView", s.toString());
+                editor.apply();
+            }
+        });
+
+
     }
 
     private void setupSpinner() {
         String[] data = getResources().getStringArray(R.array.storeInfo);  // R.array
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
         spinner.setAdapter(adapter);
+
+        // add HW4 here
     }
 
     private void setupListView() {
@@ -108,18 +150,34 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
     }
 
+    private void setupOrdersData() {
+        String content = Utils.readFile(this, "history");
+        String[] datas = content.split("\n");
+        for (int i = 0; i < datas.length; i++) {
+            Order order = Order.newInstanceWithData(datas[i]);
+            if (order != null) {
+                orders.add(order);
+            }
+        }
+    }
+
     public void onClickFunction(View view) {
         changeTextView();
     }
 
     public void changeTextView() {
 
+        Order order;
         String note = editText.getText().toString();
         String storeInfo = (String) spinner.getSelectedItem();
-        orders.add(new Order(drinkName, note, storeInfo));
+        order = new Order(note, menuResult, storeInfo);
+        orders.add(order);
 
-        textView.setText(drinkName);
-        editText.setText("");
+        Utils.writeFile(this, "history", order.getJsonObject().toString());
+
+        //textView.setText(menuResult);
+        //editText.setText(note);
+        menuResult = "";
         setupListView();
     }
 
@@ -131,13 +189,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {  //從其他 Activity回來
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_DRINK_MENU_ACTIVITY) {
             if (resultCode == RESULT_OK) {
-                textView.setText(data.getStringExtra("result"));
+                //textView.setText(data.getStringExtra("result"));
+                menuResult = data.getStringExtra("result");
+                log(menuResult);
                 Toast.makeText(this, "完成菜單", Toast.LENGTH_LONG).show();
+                changeTextView();
+
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(this, "取消菜單", Toast.LENGTH_LONG).show();
             }
