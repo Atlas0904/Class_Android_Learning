@@ -10,6 +10,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
     public static final int REQUEST_CODE_DRINK_MENU_ACTIVITY = 0;
     public static final String SHARE_PREFERENCES_EDIT_VIEW = "edit_view";
+    public static final String SHARE_PREFERENCES_SPINNER = "spinner";
 
     TextView textView;
     Button button;
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
+
+    ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
         setupSpinner();
 
         editText.setText(sharedPreferences.getString(SHARE_PREFERENCES_EDIT_VIEW, ""));   // 2nd parameter default
+        int spinnerPosition = adapter.getPosition(sharedPreferences.getString(SHARE_PREFERENCES_SPINNER,""));
+        spinner.setSelection(spinnerPosition);
+
+
 
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -115,12 +123,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                editor.putString(SHARE_PREFERENCES_SPINNER, parent.getSelectedItem().toString());
+                editor.apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
     }
 
     private void setupSpinner() {
         String[] data = getResources().getStringArray(R.array.storeInfo);  // R.array
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, data);
         spinner.setAdapter(adapter);
 
         // add HW4 here
@@ -180,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
         menuResult = "";
         setupListView();
     }
+
 
     public void showDrinkMenu(View view) {  // public then button can call
         Intent intent = new Intent();
