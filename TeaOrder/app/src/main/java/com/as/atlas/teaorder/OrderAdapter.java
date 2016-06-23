@@ -13,16 +13,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by atlas on 2016/6/6.
  */
 public class OrderAdapter extends BaseAdapter {
 
-    ArrayList<Order> orders;
+    List<Order> orders;
     LayoutInflater inflater;
 
-    public OrderAdapter(Context ctx, ArrayList<Order> orders) {
+    public OrderAdapter(Context ctx, List<Order> orders) {
         this.orders = orders;
         this.inflater = LayoutInflater.from(ctx);
     }
@@ -67,8 +68,8 @@ public class OrderAdapter extends BaseAdapter {
         Order order = orders.get(position);
         int totalNumber = 0;
         try {
-            JSONArray jsonArray = new JSONArray(order.menuResult);
-            Log.d("AAA", "menu=" + order.menuResult);
+            JSONArray jsonArray = new JSONArray(order.getMenuResults());
+            Log.d("AAA", "menu=" + order.getMenuResults());
 
             Log.d("AAA", "length=" + jsonArray.length());
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -84,8 +85,8 @@ public class OrderAdapter extends BaseAdapter {
         }
 
         holder.drinkNumber.setText(String.valueOf(totalNumber));
-        holder.note.setText(order.note);
-        holder.storeInfo.setText(order.storeInfo);
+        holder.note.setText(order.getNote());
+        holder.storeInfo.setText(order.getStoreInfo());
 
         return convertView;
     }

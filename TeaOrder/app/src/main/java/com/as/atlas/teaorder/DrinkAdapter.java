@@ -9,19 +9,22 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by atlas on 2016/6/13.
  */
 public class DrinkAdapter extends BaseAdapter {
 
-    ArrayList<Drink> drinks;
+    List<Drink> drinks;
     LayoutInflater inflater;
 
-    public DrinkAdapter(Context context, ArrayList<Drink> drinks) {
+    public DrinkAdapter(Context context, List<Drink> drinks) {
         this.inflater = LayoutInflater.from(context);
         this.drinks = drinks;
     }
@@ -53,7 +56,7 @@ public class DrinkAdapter extends BaseAdapter {
             holder.textViewMediumCupPrice = (TextView) convertView.findViewById(R.id.textViewMediumPrice);
             holder.textViewLargeCupPrice = (TextView) convertView.findViewById(R.id.textViewLargePrice);
             holder.imageViewDrinkImage = (ImageView) convertView.findViewById(R.id.imageViewDrinkImage);
-            holder.editTextDrinkNum = (EditText) convertView.findViewById(R.id.editTextDrinkNum);
+//            holder.editTextDrinkNum = (EditText) convertView.findViewById(R.id.editTextDrinkNum);
 
             convertView.setTag(holder);
         } else {
@@ -61,11 +64,13 @@ public class DrinkAdapter extends BaseAdapter {
         }
 
         Drink drink = drinks.get(position);
-        holder.textViewDrinkName.setText(drink.name);
-        holder.textViewMediumCupPrice.setText(String.valueOf(drink.mediumCupPrice));
-        holder.textViewLargeCupPrice.setText(String.valueOf(drink.largeCupPrice));
-        holder.editTextDrinkNum.setText(String.valueOf(drink.num));
-        holder.imageViewDrinkImage.setImageResource(drink.imageId);
+        holder.textViewDrinkName.setText(drink.getName());
+        holder.textViewMediumCupPrice.setText(String.valueOf(drink.getMediumCupPrice()));
+        holder.textViewLargeCupPrice.setText(String.valueOf(drink.getLargeCupPrice()));
+//        holder.editTextDrinkNum.setText(String.valueOf(drink.num));
+        //holder.imageViewDrinkImage.setImageResource(drink.imageId);
+
+        Picasso.with(inflater.getContext()).load(drink.getImage().getUrl()).into(holder.imageViewDrinkImage);
 
         return convertView;
     }
@@ -75,6 +80,6 @@ public class DrinkAdapter extends BaseAdapter {
         TextView textViewMediumCupPrice;
         TextView textViewLargeCupPrice;
         ImageView imageViewDrinkImage;
-        EditText editTextDrinkNum;
+//        EditText editTextDrinkNum;
     }
 }

@@ -3,6 +3,8 @@ package com.as.atlas.teaorder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,6 +23,11 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
     Spinner spinner;
 
-    ArrayList<Order> orders = new ArrayList<>();
+    List<Order> orders = new ArrayList<>();
     String drinkName = "Black Tea";
-    String menuResult = "";
+    String menuResults = "";
 
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
@@ -55,7 +62,23 @@ public class MainActivity extends AppCompatActivity {
         log("onCreate");
         super.onCreate(savedInstanceState);
 
+        // Test parse server
+        ParseObject testObject = new ParseObject("TestObject");
+        testObject.put("Test123", "NTU class 267");
+        testObject.saveInBackground();
 
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("TestObject");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                if (e== null) {
+                    for (ParseObject object: objects) {
+                        Toast.makeText(MainActivity.this, object.getString("foo"), Toast.LENGTH_LONG).show();
+                        Log.d("Atlas", "object:" + object.getString("foo"));
+                    }
+                }
+            }
+        });
 
         setContentView(R.layout.activity_main);
 
@@ -172,14 +195,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupOrdersData() {
-        String content = Utils.readFile(this, "history");
-        String[] datas = content.split("\n");
-        for (int i = 0; i < datas.length; i++) {
-            Order order = Order.newInstanceWithData(datas[i]);
-            if (order != null) {
-                orders.add(order);
+//        String content = Utils.readFile(this, "history");
+//        String[] datas = content.split("\n");
+//        for (int i = 0; i < datas.length; i++) {
+//            Order order = Order.newInstanceWithData(datas[i]);
+//            if (order != null) {
+//                orders.add(order);
+//            }
+//        }
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+
+
+        // 實作 callback 並且注意帶 Order type
+        final FindCallback<Order> callback = new FindCallback<Order>() {
+            @Override
+            public void done(List<Order> objects, ParseException e) {
+                if (e == null) {
+                    orders = objects;
+                    setupListView();
+                }
             }
+        };
+
+        if (info != null && info.isConnected()) {
+            Order.getOrdersFromRemote(new FindCallback<Order>() {
+                @Override
+                public void done(List<Order> objects, ParseException e) {
+                    if (e != null) {
+                        Toast.makeText(MainActivity.this, "Sync failed", Toast.LENGTH_LONG).show();
+                        Order.getQuery().fromLocalDatastore().findInBackground(callback);
+                    }
+                    else {
+                        callback.done(objects, e);
+                    }
+                }
+            });
+        } else {
+            Order.getQuery().fromLocalDatastore().findInBackground(callback);
         }
+
     }
 
     public void onClickFunction(View view) {
@@ -191,14 +247,21 @@ public class MainActivity extends AppCompatActivity {
         Order order;
         String note = editText.getText().toString();
         String storeInfo = (String) spinner.getSelectedItem();
-        order = new Order(note, menuResult, storeInfo);
+        //order = new Order(note, menuResult, storeInfo);
+        order = new Order();
+        order.setNote(note);
+        order.setMenuResults(menuResults);
+        order.setStoreInfo(storeInfo);
+        order.pinInBackground();  // 上傳前存到 local: 用 pinInBackGroud
+        order.saveEventually();
+
         orders.add(order);
 
         Utils.writeFile(this, "history", order.getJsonObject().toString());
 
         //textView.setText(menuResult);
         //editText.setText(note);
-        menuResult = "";
+        menuResults = "";
         setupListView();
     }
 
@@ -217,8 +280,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_DRINK_MENU_ACTIVITY) {
             if (resultCode == RESULT_OK) {
                 //textView.setText(data.getStringExtra("result"));
-                menuResult = data.getStringExtra("result");
-                log(menuResult);
+                menuResults = data.getStringExtra("result");
+                log(menuResults);
                 Toast.makeText(this, "完成菜單", Toast.LENGTH_LONG).show();
                 changeTextView();
 

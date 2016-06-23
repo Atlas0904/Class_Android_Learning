@@ -13,10 +13,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DrinkMenuActivity extends AppCompatActivity
         implements DrinkOrderDialogFragment.OnDrinkOrderListener {
@@ -26,7 +30,7 @@ public class DrinkMenuActivity extends AppCompatActivity
     ListView listViewDrinkList;
     TextView textViewPrice;
 
-    ArrayList<Drink> drinks = new ArrayList<>();
+    List<Drink> drinks = new ArrayList<>();
     ArrayList<DrinkOrder> drinkOrders = new ArrayList<>();
 
     // Set data
@@ -52,10 +56,6 @@ public class DrinkMenuActivity extends AppCompatActivity
         updateTotalPrice();
 
     }
-
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +96,7 @@ public class DrinkMenuActivity extends AppCompatActivity
                 DrinkAdapter drinkAdapter = (DrinkAdapter) parent.getAdapter();
                 Drink drink = (Drink) drinkAdapter.getItem(position);
                 if (drinkOrders.contains(drink)) {
-                    drink.resetNum();
+//                    drink.resetNum();
                     log("drink num reset. drink=" + drink);
                 }
                 setupDrinkListView();
@@ -115,7 +115,7 @@ public class DrinkMenuActivity extends AppCompatActivity
         boolean found = false;
 
         for (DrinkOrder order: drinkOrders) {
-            if (order.drinkName.equals(drink.name)) {
+            if (order.drinkName.equals(drink.getName())) {
                 drinkOrder = order;
                 found = true;
                 break;
@@ -123,9 +123,9 @@ public class DrinkMenuActivity extends AppCompatActivity
         }
 
         if (!found) {
-            drinkOrder.mediumCupPrice = drink.mediumCupPrice;
-            drinkOrder.largeCupPrice = drink.largeCupPrice;
-            drinkOrder.drinkName = drink.name;
+            drinkOrder.mediumCupPrice = drink.getMediumCupPrice();
+            drinkOrder.largeCupPrice = drink.getLargeCupPrice();
+            drinkOrder.drinkName = drink.getName();
         }
 
         DrinkOrderDialogFragment drinkOrderDialogFragment = DrinkOrderDialogFragment.newInstance(drinkOrder);
@@ -156,10 +156,20 @@ public class DrinkMenuActivity extends AppCompatActivity
     }
 
     private void setDrinkData() {
-        for (int i = 0 ; i < drinkNames.length; i++) {
-            Drink drink = new Drink(drinkNames[i], mediumCupPrice[i], largeCupPrice[i], 0, imageId[i]);
-            drinks.add(drink);
-        }
+//        for (int i = 0 ; i < drinkNames.length; i++) {
+//            Drink drink = new Drink(drinkNames[i], mediumCupPrice[i], largeCupPrice[i], 0, imageId[i]);
+//            drinks.add(drink);
+//        }
+
+        Drink.getQuery().findInBackground(new FindCallback<Drink>() {
+            @Override
+            public void done(List<Drink> objects, ParseException e) {
+                if (e == null) {
+                    drinks = objects;
+                    setupDrinkListView();
+                }
+            }
+        });
     }
 
     private void setupDrinkListView() {
