@@ -1,5 +1,6 @@
 package com.as.atlas.teaorder;
 
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,8 +14,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.SaveCallback;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +39,7 @@ public class DrinkMenuActivity extends AppCompatActivity
 
     // Set data
     private static final String TAG = DrinkMenuActivity.class.getName();
-    String[] drinkNames = {"Tea", "Cola", "Milk Tea", "Bubble Milk Tea"};
+    String[] names = {"冬瓜紅茶", "玫瑰鹽奶蓋紅茶", "珍珠紅茶拿鐵", "紅茶拿鐵"};
     int[] mediumCupPrice = {25, 35, 45, 55};
     int[] largeCupPrice = {35, 45, 55, 65};
     int[] imageId = {
@@ -46,6 +50,7 @@ public class DrinkMenuActivity extends AppCompatActivity
 
     @Override
     public void onDrinkOrderFinished(DrinkOrder drinkOrder) {
+
         for (int i = 0; i < drinkOrders.size(); i++) {
             if (drinkOrders.get(i).drinkName.equals(drinkOrder.drinkName)) {
                 drinkOrders.set(i, drinkOrder);
@@ -108,7 +113,7 @@ public class DrinkMenuActivity extends AppCompatActivity
     }
 
     private void showDetailCheckMenu(Drink drink) {
-        android.app.FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
 
         DrinkOrder drinkOrder = new DrinkOrder();
@@ -126,6 +131,7 @@ public class DrinkMenuActivity extends AppCompatActivity
             drinkOrder.mediumCupPrice = drink.getMediumCupPrice();
             drinkOrder.largeCupPrice = drink.getLargeCupPrice();
             drinkOrder.drinkName = drink.getName();
+            Log.d("Atlas", "showDetailCheckMenu() drink:" + drink + " drinkOrder:" + drinkOrder);
         }
 
         DrinkOrderDialogFragment drinkOrderDialogFragment = DrinkOrderDialogFragment.newInstance(drinkOrder);
@@ -151,23 +157,41 @@ public class DrinkMenuActivity extends AppCompatActivity
         int total = 0;
         for (DrinkOrder drinkOrder: drinkOrders) {
             total += (drinkOrder.mediumCupPrice * drinkOrder.mediumCupNum + drinkOrder.largeCupPrice * drinkOrder.largeCupNum);
+            Log.d("Atlas", "updateTotalPrice() drinkOrder:" + drinkOrder);
         }
+        Log.d("Atlas", "total price:" + total);
         textViewPrice.setText(String.valueOf(total));
     }
 
     private void setDrinkData() {
-//        for (int i = 0 ; i < drinkNames.length; i++) {
-//            Drink drink = new Drink(drinkNames[i], mediumCupPrice[i], largeCupPrice[i], 0, imageId[i]);
-//            drinks.add(drink);
-//        }
 
         Drink.getQuery().findInBackground(new FindCallback<Drink>() {
             @Override
-            public void done(List<Drink> objects, ParseException e) {
-                if (e == null) {
-                    drinks = objects;
-                    setupDrinkListView();
-                }
+            public void done(final List<Drink> objects, ParseException e) {
+            if(e != null)
+            {
+                Drink.getQuery().fromLocalDatastore().findInBackground(new FindCallback<Drink>() {
+                    @Override
+                    public void done(List<Drink> objects, ParseException e) {
+                        drinks = objects;
+                        setupDrinkListView();
+                    }
+                });
+            }
+            else{
+                ParseObject.unpinAllInBackground("Drink", new DeleteCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        ParseObject.pinAllInBackground(objects, new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                drinks = objects;
+                                setupDrinkListView();
+                            }
+                        });
+                    }
+                });
+            }
             }
         });
     }

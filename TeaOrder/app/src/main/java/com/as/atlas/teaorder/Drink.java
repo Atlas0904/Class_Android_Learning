@@ -16,8 +16,9 @@ import org.json.JSONObject;
 public class Drink extends ParseObject{
 
     public final static String DRINK_NAME = "name";
-    public final static String DRINK_MEDIUM_CUP_PRICE = "medium_cup_price";
-    public final static String DRINK_LARGE_CUP_PRICE = "large_cup_price";
+    public final static String DRINK_MEDIUM_CUP_PRICE = "mPrice";
+    public final static String DRINK_LARGE_CUP_PRICE = "lPrice";
+    private static final String DRINK_IMAGE = "image";
 
 //    String name;
 //    int mediumCupPrice;
@@ -35,17 +36,17 @@ public class Drink extends ParseObject{
 //    }
 
 
-    public String getName() { return getString("name"); }
-    public void setName(String name) { put("name", name); }
+    public String getName() { return getString(DRINK_NAME); }
+    public void setName(String name) { put(DRINK_NAME, name); }
 
-    public int getMediumCupPrice() { return getInt("mediumCupPrice"); }
-    public void setMediumCupPrice(int mediumCupPrice) { put("mediumCupPrice", mediumCupPrice); }
+    public int getMediumCupPrice() { return getInt(DRINK_MEDIUM_CUP_PRICE); }
+    public void setMediumCupPrice(int mediumCupPrice) { put(DRINK_MEDIUM_CUP_PRICE, mediumCupPrice); }
 
-    public int getLargeCupPrice() { return getInt("largeCupPrice"); }
-    public void setLargeCupPrice(int largeCupPrice) { put("largeCupPrice", largeCupPrice); }
+    public int getLargeCupPrice() { return getInt(DRINK_LARGE_CUP_PRICE); }
+    public void setLargeCupPrice(int largeCupPrice) { put(DRINK_LARGE_CUP_PRICE, largeCupPrice); }
 
-    public void setImage(ParseFile file) { put("image", file); }
-    public ParseFile getImage() { return getParseFile("image"); }
+    public void setImage(ParseFile file) { put(DRINK_IMAGE, file); }
+    public ParseFile getImage() { return getParseFile(DRINK_IMAGE); }
 
     public static ParseQuery<Drink> getQuery() { return ParseQuery.getQuery(Drink.class); }
 

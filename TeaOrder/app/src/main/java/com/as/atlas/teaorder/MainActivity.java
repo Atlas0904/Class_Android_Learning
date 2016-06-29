@@ -159,7 +159,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Order order = (Order) parent.getAdapter().getItem(position);
+                goToDetailOrder(order);
+            }
+        });
 
+
+    }
+
+    private void goToDetailOrder(Order order) {
+        Intent intent = new Intent();
+        intent.setClass(this, OrderDetailActivity.class);
+        intent.putExtra("note", order.getNote());
+        intent.putExtra("menuResults", order.getMenuResults());
+        intent.putExtra("storeInfo", order.getStoreInfo());
+
+        startActivity(intent);
     }
 
     private void setupSpinner() {
@@ -195,7 +213,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupOrdersData() {
-//        String content = Utils.readFile(this, "history");
+
+        // Mark to use parseObject cache rather than file
+//        String content = Utils.readFile(this, Utils.UTILS_ORDER_LIST_HISTORY);
 //        String[] datas = content.split("\n");
 //        for (int i = 0; i < datas.length; i++) {
 //            Order order = Order.newInstanceWithData(datas[i]);
@@ -257,11 +277,14 @@ public class MainActivity extends AppCompatActivity {
 
         orders.add(order);
 
-        Utils.writeFile(this, "history", order.getJsonObject().toString());
+        Utils.writeFile(this, Utils.UTILS_ORDER_LIST_HISTORY, order.getJsonObject().toString());
 
         //textView.setText(menuResult);
         //editText.setText(note);
+        textView.setText(note);
         menuResults = "";
+        editText.setText("");
+
         setupListView();
     }
 
@@ -283,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 menuResults = data.getStringExtra("result");
                 log(menuResults);
                 Toast.makeText(this, "完成菜單", Toast.LENGTH_LONG).show();
-                changeTextView();
+                //changeTextView();
 
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(this, "取消菜單", Toast.LENGTH_LONG).show();

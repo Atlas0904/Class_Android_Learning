@@ -68,8 +68,8 @@ public class DrinkOrderDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {   // = onCreate + onCreateView
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            drinkOrder = DrinkOrder.newInstanceWithData(mParam1);
+            String data = getArguments().getString(ARG_PARAM1);
+            drinkOrder = DrinkOrder.newInstanceWithData(data);
         }
         
         

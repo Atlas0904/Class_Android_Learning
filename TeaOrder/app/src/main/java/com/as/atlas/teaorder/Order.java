@@ -49,7 +49,8 @@ public class Order extends ParseObject {
 
     public static void getOrdersFromRemote(final FindCallback<Order> callback) {
         Log.d("Atlas", "getOrdersFromRemote enter");
-        getQuery().findInBackground(new FindCallback<Order>() {
+        getQuery().orderByDescending("createdAt")
+                .findInBackground(new FindCallback<Order>() {
             @Override
             public void done(List<Order> objects, ParseException e) {
                 Log.d("Atlas", "getOrdersFromRemote e:" + e);

@@ -9,10 +9,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.parse.GetFileCallback;
+import com.parse.ParseException;
 import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +49,7 @@ public class DrinkAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Holder holder;
+        final Holder holder;
 
         if (convertView == null) {  // 如果還沒有 convertView 先 new 出來
             convertView = inflater.inflate(R.layout.list_view_drink_item, null);
@@ -69,6 +72,12 @@ public class DrinkAdapter extends BaseAdapter {
         holder.textViewLargeCupPrice.setText(String.valueOf(drink.getLargeCupPrice()));
 //        holder.editTextDrinkNum.setText(String.valueOf(drink.num));
         //holder.imageViewDrinkImage.setImageResource(drink.imageId);
+        drink.getImage().getFileInBackground(new GetFileCallback() {
+            @Override
+            public void done(File file, ParseException e) {
+                Picasso.with(inflater.getContext()).load(file).into(holder.imageViewDrinkImage);
+            }
+        });
 
         Picasso.with(inflater.getContext()).load(drink.getImage().getUrl()).into(holder.imageViewDrinkImage);
 
