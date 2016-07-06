@@ -128,8 +128,8 @@ public class DrinkMenuActivity extends AppCompatActivity
         }
 
         if (!found) {
-            drinkOrder.mediumCupPrice = drink.getMediumCupPrice();
-            drinkOrder.largeCupPrice = drink.getLargeCupPrice();
+            drinkOrder.mediumCupPrice = drink.getmPrice();
+            drinkOrder.largeCupPrice = drink.getlPrice();
             drinkOrder.drinkName = drink.getName();
             Log.d("Atlas", "showDetailCheckMenu() drink:" + drink + " drinkOrder:" + drinkOrder);
         }

@@ -1,6 +1,7 @@
 package com.as.atlas.teaorder;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +69,12 @@ public class DrinkAdapter extends BaseAdapter {
 
         Drink drink = drinks.get(position);
         holder.textViewDrinkName.setText(drink.getName());
-        holder.textViewMediumCupPrice.setText(String.valueOf(drink.getMediumCupPrice()));
-        holder.textViewLargeCupPrice.setText(String.valueOf(drink.getLargeCupPrice()));
+        holder.textViewMediumCupPrice.setText(String.valueOf(drink.getmPrice()));
+        holder.textViewLargeCupPrice.setText(String.valueOf(drink.getlPrice()));
+        Log.d("Atlas", "DrinkAdapter drink" + drink.getName() + "/"
+                + drink.getmPrice() + "/"
+                + drink.getlPrice()
+        );
 //        holder.editTextDrinkNum.setText(String.valueOf(drink.num));
         //holder.imageViewDrinkImage.setImageResource(drink.imageId);
         drink.getImage().getFileInBackground(new GetFileCallback() {

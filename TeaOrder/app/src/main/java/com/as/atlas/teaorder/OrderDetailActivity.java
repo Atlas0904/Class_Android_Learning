@@ -203,7 +203,8 @@ public class OrderDetailActivity extends AppCompatActivity
 
 
         Routing routing = new Routing.Builder()
-                .travelMode(AbstractRouting.TravelMode.WALKING)   // 指定路徑
+                //.travelMode(AbstractRouting.TravelMode.WALKING)   // 指定路徑
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
                 .waypoints(start, storeLocation)   // 起點終點
                 .withListener(this)
                 .build();

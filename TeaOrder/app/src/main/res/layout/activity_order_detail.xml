@@ -54,4 +54,35 @@
         android:layout_below="@+id/textViewStoreInfo"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/textViewMenuResult"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="right"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="走路"
+            android:id="@+id/radioButtonWalk"
+            android:checked="false" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="開車"
+            android:id="@+id/radioButtonCar"
+            android:checked="false" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="大眾工具"
+            android:id="@+id/radioButtonTransmit"
+            android:checked="false" />
+    </RadioGroup>
 </RelativeLayout>

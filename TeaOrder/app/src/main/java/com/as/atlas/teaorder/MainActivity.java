@@ -24,10 +24,22 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,10 +48,15 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    private static final String PARSE_TEST_STRING = "foo";
     private static final String TAG = MainActivity.class.getName();
     public static final int REQUEST_CODE_DRINK_MENU_ACTIVITY = 0;
+
+
     public static final String SHARE_PREFERENCES_EDIT_VIEW = "edit_view";
     public static final String SHARE_PREFERENCES_SPINNER = "spinner";
+    public static final int REQUEST_CODE_LOGIN_ACTIVITY = 1;
 
     TextView textView;
     Button button;
@@ -57,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayAdapter<String> adapter;
 
+    CallbackManager callbackManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         log("onCreate");
@@ -64,19 +83,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Test parse server
         ParseObject testObject = new ParseObject("TestObject");
-        testObject.put("Test123", "NTU class 267");
+        testObject.put(PARSE_TEST_STRING, "NTU class 267");
         testObject.saveInBackground();
 
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("TestObject");
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {
-                if (e== null) {
+                if (e == null) {
                     for (ParseObject object: objects) {
-                        Toast.makeText(MainActivity.this, object.getString("foo"), Toast.LENGTH_LONG).show();
-                        Log.d("Atlas", "object:" + object.getString("foo"));
+                        Toast.makeText(MainActivity.this, object.getString(PARSE_TEST_STRING), Toast.LENGTH_LONG).show();
+                        Log.e("Atlas", "object:" + object.getString(PARSE_TEST_STRING));
                     }
+                } else {
+                    Log.e("Atlas", "findInBackground" + e.getMessage());
                 }
+
             }
         });
 
@@ -95,6 +117,15 @@ public class MainActivity extends AppCompatActivity {
         setupOrdersData();
         setupListView();
         setupSpinner();
+//        setupFaceBook();
+
+        // 開啟 login activity
+//        Log.d("Atlas", "ParseUser.getCurrentUser()" + ParseUser.getCurrentUser().toString());
+//        if (ParseUser.getCurrentUser() == null) {
+//            Intent intent = new Intent();
+//            intent.setClass(this, LoginActivity.class);
+//            startActivityForResult(intent, REQUEST_CODE_LOGIN_ACTIVITY);
+//        }
 
         editText.setText(sharedPreferences.getString(SHARE_PREFERENCES_EDIT_VIEW, ""));   // 2nd parameter default
         int spinnerPosition = adapter.getPosition(sharedPreferences.getString(SHARE_PREFERENCES_SPINNER,""));
@@ -179,6 +210,63 @@ public class MainActivity extends AppCompatActivity {
 
         startActivity(intent);
     }
+
+//    private void setupFaceBook() {
+//        callbackManager = new CallbackManager.Factory().create();
+//        LoginButton loginButton = (LoginButton) findViewById(R.id.loginButtonFB);
+//        loginButton.setReadPermissions("email", "public_profile");
+//        // 向使用者要什麼權限  https://developers.facebook.com/docs/facebook-login/permissions/#adding
+//
+//        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+//            @Override
+//            public void onSuccess(LoginResult loginResult) {
+//                Log.d("Atlas", "onSuccess();");
+//
+//
+//
+//                AccessToken accessToken = loginResult.getAccessToken();
+////                Log.d("Atlas", accessToken.getExpires());
+////                Log.d("Atlas", accessToken.getPermissions());
+//
+//
+//                // Get 自己的資料
+//                GraphRequest request = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
+//                    @Override
+//                    public void onCompleted(JSONObject object, GraphResponse response) {
+//                        Log.d("Atlas", object.toString());
+//                        try {
+//                            textView.setText(object.getString("name"));
+//                            if (object.has("email")) {
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                });
+//                Bundle bundle = new Bundle();
+//                bundle.putString("fields", "email, id, name");   // 要問的東西放
+//                request.setParameters(bundle);
+//
+//                request.executeAsync();   //執行才會要
+//
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//
+//            }
+//
+//            @Override
+//            public void onError(FacebookException error) {
+//
+//            }
+//        });
+//
+//        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+//        if (accessToken!= null) {
+//            // 重新做 request
+//        }
+//    }
 
     private void setupSpinner() {
         String[] data = getResources().getStringArray(R.array.storeInfo);  // R.array
@@ -299,6 +387,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {  //從其他 Activity回來
         super.onActivityResult(requestCode, resultCode, data);
+//        callbackManager.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_DRINK_MENU_ACTIVITY) {
             if (resultCode == RESULT_OK) {

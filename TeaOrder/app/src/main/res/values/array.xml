@@ -8,5 +8,11 @@
         <item>西門店,台北市萬華區成都路37號</item>
     </string-array>
 
+    <string-array name="method">
+        <item>走路</item>
+        <item>腳踏車</item>
+        <item>開車</item>
+        <item>大眾工具</item>
+    </string-array>
 
 </resources>

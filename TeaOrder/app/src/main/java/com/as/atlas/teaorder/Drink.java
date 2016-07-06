@@ -16,8 +16,8 @@ import org.json.JSONObject;
 public class Drink extends ParseObject{
 
     public final static String DRINK_NAME = "name";
-    public final static String DRINK_MEDIUM_CUP_PRICE = "mPrice";
-    public final static String DRINK_LARGE_CUP_PRICE = "lPrice";
+    public final static String DRINK_MEDIUM_PRICE = "mPrice";
+    public final static String DRINK_LARGE_PRICE = "lPrice";
     private static final String DRINK_IMAGE = "image";
 
 //    String name;
@@ -39,11 +39,15 @@ public class Drink extends ParseObject{
     public String getName() { return getString(DRINK_NAME); }
     public void setName(String name) { put(DRINK_NAME, name); }
 
-    public int getMediumCupPrice() { return getInt(DRINK_MEDIUM_CUP_PRICE); }
-    public void setMediumCupPrice(int mediumCupPrice) { put(DRINK_MEDIUM_CUP_PRICE, mediumCupPrice); }
+    public int getmPrice(){  return  getInt(DRINK_MEDIUM_PRICE);}
+    public void setmPrice(int mPrice) {
+        put(DRINK_MEDIUM_PRICE, mPrice);
+    }
 
-    public int getLargeCupPrice() { return getInt(DRINK_LARGE_CUP_PRICE); }
-    public void setLargeCupPrice(int largeCupPrice) { put(DRINK_LARGE_CUP_PRICE, largeCupPrice); }
+    public int getlPrice(){  return  getInt(DRINK_LARGE_PRICE);}
+    public void setlPrice(int lPrice) {
+        put(DRINK_LARGE_PRICE, lPrice);
+    }
 
     public void setImage(ParseFile file) { put(DRINK_IMAGE, file); }
     public ParseFile getImage() { return getParseFile(DRINK_IMAGE); }
@@ -68,8 +72,10 @@ public class Drink extends ParseObject{
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put(DRINK_NAME, getName());
-            jsonObject.put(DRINK_MEDIUM_CUP_PRICE, getMediumCupPrice());
-            jsonObject.put(DRINK_LARGE_CUP_PRICE, getLargeCupPrice());
+            jsonObject.put(DRINK_MEDIUM_PRICE, getmPrice());
+            jsonObject.put(DRINK_LARGE_PRICE, getlPrice());
+            jsonObject.put(DRINK_IMAGE, getImage());
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
