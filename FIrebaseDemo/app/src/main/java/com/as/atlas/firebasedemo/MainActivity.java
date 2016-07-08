@@ -42,26 +42,32 @@ public class MainActivity extends AppCompatActivity {
         new Firebase(URL_FIREBASE_DEMO).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG, "onChildAdded();");
-//                adapter.add(
-//                        (String) dataSnapshot.child("name").getValue());
+                Log.d(TAG, "onChildAdded()");
+                Log.d(TAG, "dataSnapshot:" + dataSnapshot.getValue());
+                Log.d(TAG, "dataSnapshot.child(name):" + dataSnapshot.child("name").getValue());
+                Log.d(TAG, "dataSnapshot.child(name):" + dataSnapshot.child("0/name").getValue());
+                Log.d(TAG, "dataSnapshot.getChildrenCount():" + dataSnapshot.getChildrenCount());
 
-                Log.d(TAG, "dataSnapshot: getChildrenCount:" + dataSnapshot.getChildrenCount());
-                Log.d(TAG, "dataSnapshot1:" + dataSnapshot.getValue());
-                Log.d(TAG, "dataSnapshot2:" + dataSnapshot.child("/contacts/3/name").getValue());
-                Log.d(TAG, "dataSnapshot3:" + dataSnapshot.child("contacts/3/name").getValue());
-                Log.d(TAG, "dataSnapshot4:" + dataSnapshot.child("/contacts/name").getValue());
-                Log.d(TAG, "dataSnapshot5:" + dataSnapshot.child("contacts/name").getValue());
-                Log.d(TAG, "dataSnapshot6:" + dataSnapshot.child("3/name").getValue());
-                Log.d(TAG, "dataSnapshot7:" + dataSnapshot.child("/3/name").getValue());
-
-                Log.d(TAG, "dataSnapshot8:" + dataSnapshot.child("name").getValue());
-
-                ArrayList<String> array = (ArrayList<String>) dataSnapshot.getValue();
-                for (int i = 0; i < array.size(); i++) {
-                    Log.d(TAG, "name =" + String.valueOf(array.get(i)));
+                int i = 0;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    if (child.getValue() != null)  Log.d(TAG, "child index:" + (i++) + " " + String.valueOf(child.getValue()));
                 }
 
+
+                // From the Json data
+                /*
+                {
+                    "contacts" : [ {
+                    "name" : "Sandy"
+                }, {
+                    "name" : "Atlas"
+                }, {
+                    "name" : "Warhol"
+                }, {
+                    "name" : "Maisie"
+                } ]
+                }
+                */
             }
 
             @Override
