@@ -3,7 +3,7 @@ package com.as.atlas.googlemapfollowwe;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -28,6 +28,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import static android.widget.Toast.LENGTH_LONG;
+
 public class MapsActivity extends FragmentActivity
         implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -36,20 +38,11 @@ public class MapsActivity extends FragmentActivity
     private static final String TAG = "Atlas";
 
     private GoogleMap mMap;
-
-
     private GoogleApiClient googleApiClient;
 
     // Location請求物件
     private LocationRequest locationRequest;
-
-    // 記錄目前最新的位置
-    private Location currentLocation;
-
-    // 顯示目前與儲存位置的標記物件
-    private Marker currentMarker, itemMarker;
-
-    private LocationManager locationManager;
+    private GoogleMap googleMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +51,13 @@ public class MapsActivity extends FragmentActivity
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                googleMap = map;
+            }
+        });
 
         configGoogleApiClient();
         configLocationRequest();
@@ -78,13 +75,6 @@ public class MapsActivity extends FragmentActivity
         //disableLocationUpdate();
     }
 
-    private void setUpMap() {
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location == null) {
-            locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        }
-    }
-
     private void enableLocationUpdate() {
     }
 
@@ -99,6 +89,7 @@ public class MapsActivity extends FragmentActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d("Atlas", "onMapReady googleMap:" + googleMap);
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
@@ -108,7 +99,6 @@ public class MapsActivity extends FragmentActivity
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         */
-
 
 
         // 建立位置的座標物件
@@ -143,7 +133,7 @@ public class MapsActivity extends FragmentActivity
                 .snippet(snippet)
                 .icon(icon);
 
-        mMap.addMarker(markerOptions);
+        googleMap.addMarker(markerOptions);
     }
 
     private void configGoogleApiClient() {
@@ -171,31 +161,59 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         log("onConnected Bundle: " + bundle);
-        // 已經連線到Google Services
-        // 啟動位置更新服務
-        // 位置資訊更新的時候，應用程式會自動呼叫LocationListener.onLocationChanged
 
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            Log.d("Atlas", "permission check failure.");
-//            return;
-//        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+            }
+
+            return;
+        }
+
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                Toast.makeText(MapsActivity.this, "On marker click", LENGTH_LONG).show();
+                return false;
+            }
+        });
+
+        googleMap.setMyLocationEnabled(true);
+        createLocationRequest();
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 googleApiClient, locationRequest, MapsActivity.this);
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        LatLng start = new LatLng(location.getLatitude(), location.getLongitude());   // 有可能 Geany 一開始給錯  導致沒有路線圖
+
+        if (location != null) {
+            googleMap.addMarker(new MarkerOptions().position(start).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+        }
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 17));
+
+    }
+
+    private void createLocationRequest() {    // 一直 update
+        if (locationRequest == null) {
+            locationRequest = new LocationRequest();
+            locationRequest.setInterval(1000);
+            //locationRequest.setFastestInterval();  其他 app 拿
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         // Google Services連線中斷
         // int參數是連線中斷的代號
-
-
 
     }
 
@@ -212,7 +230,7 @@ public class MapsActivity extends FragmentActivity
         // 裝置沒有安裝Google Play服務
         if (errorCode == ConnectionResult.SERVICE_MISSING) {
             Toast.makeText(this, R.string.google_play_service_missing,
-                    Toast.LENGTH_LONG).show();
+                    LENGTH_LONG).show();
         }
 
     }
@@ -220,26 +238,12 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onLocationChanged(Location location) {
         log("onLocationChanged location: " + location);
-        // 位置改變
-        // Location參數是目前的位置
+        LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
 
-        // 位置改變
-        // Location參數是目前的位置
-        currentLocation = location;
-        LatLng latLng = new LatLng(
-                location.getLatitude(), location.getLongitude());
-
-        // 設定目前位置的標記
-        if (currentMarker == null) {
-            currentMarker = mMap.addMarker(new MarkerOptions().position(latLng));
-        }
-        else {
-            currentMarker.setPosition(latLng);
-        }
-
-        // 移動地圖到目前的位置
-        moveMap(latLng);
     }
+
+
     private void log(String s) {
         Log.d(TAG, s);
     }
