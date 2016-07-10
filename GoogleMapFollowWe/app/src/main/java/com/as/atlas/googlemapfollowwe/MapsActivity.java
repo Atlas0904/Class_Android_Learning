@@ -36,6 +36,8 @@ public class MapsActivity extends FragmentActivity
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final String TAG = "Atlas";
+    private static boolean bLocationChanged = false;
+
 
     private GoogleMap mMap;
     private GoogleApiClient googleApiClient;
@@ -238,9 +240,10 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onLocationChanged(Location location) {
         log("onLocationChanged location: " + location);
-        LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-
+        if (bLocationChanged) {
+            LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+        }
     }
 
 
