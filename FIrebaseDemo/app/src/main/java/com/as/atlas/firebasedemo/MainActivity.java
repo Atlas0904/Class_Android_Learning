@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
         Firebase.setAndroidContext(this);
-        new Firebase(URL_FIREBASE_DEMO).addChildEventListener(new ChildEventListener() {
+        firebase = new Firebase(URL_FIREBASE_DEMO);
+
+        firebase.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Log.d(TAG, "onChildAdded()");
@@ -92,9 +94,28 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        setPeople();
+
 //        initFirebase();
 //        readFirebase();
 //        writeFirebase();
+    }
+
+    private void setPeople() {
+
+        Person atlas = new Person();
+        atlas.setName("Atlas");
+        atlas.setAddress("館前東路26號7-7");
+        firebase.child("Person").push().setValue(atlas);
+
+        Person sandy = new Person();
+        sandy.setName("Sandy");
+        sandy.setAddress("愛十街");
+
+
+        firebase.child("Person").push().setValue(sandy);
+
     }
 
 //    private void readFirebase() {
