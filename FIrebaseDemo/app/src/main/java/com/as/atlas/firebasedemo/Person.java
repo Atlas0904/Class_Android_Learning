@@ -23,13 +23,8 @@ public class Person {
     }
 
     //Getters and setters
-    @JsonProperty("name")
     public String getName() { return name; }
-    @JsonProperty("address")
     public String getAddress() { return address; }
-
-    public void setName(String name) { this.name = name; }
-    public void setAddress(String address) { this.address = address; }
 
     @Override
     public String toString() {

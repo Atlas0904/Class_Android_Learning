@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Person person = child.getValue(Person.class);
-                    log("onChildAdded person:" + person);
-                    adapter.add(String.valueOf(person));
-                }
+//                for (DataSnapshot child : dataSnapshot.getChildren()) {
+//                    Person person = child.getValue(Person.class);
+//                    log("onChildAdded person:" + person);
+//                    adapter.add(String.valueOf(person));
+//                }
 
                 // From the Json data
                 /*
@@ -108,8 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         setPeople();
-        //listenDataBaseChange();
-        addListener();
+        listenDataBaseChange();
+        //addListener();
 
 //        initFirebase();
 //        readFirebase();
@@ -145,24 +145,19 @@ public class MainActivity extends AppCompatActivity {
         firebase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-//                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-//                    //Getting the data from snapshot
-//                    //Person person = postSnapshot.getValue(Person.class);
-//
-//                    //Adding it to a string
-//                    //String string = "Name: "+person.getName()+"\nAddress: "+person.getAddress()+"\n\n";
-//
-//                    //Displaying it on textview
-//                    Log.d(TAG, "listenDataBaseChange() Person: " + postSnapshot.getValue(Person.class));
-//
-////                    adapter.add(
-////                            (String) snapshot.child("Person").getValue());
-//                }
 
-                for (DataSnapshot child : snapshot.getChildren()) {
-                    Log.d(TAG, child.getValue().toString());
-//                    Person person = child.getValue(Person.class);
-//                    Log.d(TAG, "Person:" + person);
+
+                for (DataSnapshot childPerson: snapshot.getChildren()) {
+                    String name = (String) childPerson.child("name").getValue();
+                    String address = (String) childPerson.child("address").getValue();
+
+                    log("1st method Person name:"+ name + " address:" + address);
+                }
+
+                for (DataSnapshot childPerson: snapshot.getChildren()) {
+                    Person p =childPerson.getValue(Person.class);
+
+                    log("2nd method Person: " + p);
                 }
 
                 HashMap<String, Person> map = null;
@@ -170,54 +165,26 @@ public class MainActivity extends AppCompatActivity {
                     map = (HashMap<String, Person>) child.getValue();
                     log("list:" + map);
                 }
-
-                if (map != null) {
-//                    Set keys = map.keySet();
-////                    for (Iterator i = keys.iterator(); i.hasNext(); ) {
-////                        String key = (String) i.next();
-////                        Person value = (Person) map.get(key);
-////                        log(key + " = " + value);
-////                    }
-//
-//                    for (Object key : map.keySet()) {
-//
-//                        System.out.println("key:" + key + " value=" + map.get(key));
-//                    }
-
-
-                    Iterator iter = map.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry entry = (Map.Entry) iter.next();
-                        String key = (String) entry.getKey();
-                        Person val = (Person) entry.getValue();
-
-                        log("key:" + key + " value=" + val);
-                    }
-
-                }
-
             }
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
-                System.out.println("The read failed: " + firebaseError.getMessage());
+                log("The read failed: " + firebaseError.getMessage());
             }
         });
     }
 
     private void setPeople() {
 
-        Person atlas = new Person();
-        atlas.setName("Atlas");
-        atlas.setAddress("館前東路26號7-7");
-        firebase.child("Person").push().setValue(atlas);
 
-        Person sandy = new Person();
-        sandy.setName("Sandy");
-        sandy.setAddress("愛十街");
+        Person atlas = new Person("Atlas", "中興路");
+        Person sandy = new Person("Sandy", "愛十街");
 
+        firebase.push().setValue(atlas);    // 如果本身就是 class, 就不要再用  child("Person")
+        firebase.push().setValue(sandy);
 
-        firebase.child("Person").push().setValue(sandy);
+//        firebase.child("Person").push().setValue(atlas);
+//        firebase.child("Person").push().setValue(sandy);
 
     }
 
