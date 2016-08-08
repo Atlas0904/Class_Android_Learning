@@ -3,6 +3,7 @@ package com.as.atlas.googlemapfollowwe;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -12,20 +13,28 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
@@ -37,6 +46,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -50,9 +60,7 @@ public class MapsActivity extends AppCompatActivity
     private static final String TAG = "Atlas";
     private static boolean bLocationChanged = false;
 
-    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
-
-    private Button buttonSearch;
+    private static final int GOOGLE_API_CLIENT_ID = 0;
 
     private GoogleMap mMap;
     private GoogleApiClient googleApiClient;
@@ -60,6 +68,12 @@ public class MapsActivity extends AppCompatActivity
     // Location請求物件
     private LocationRequest locationRequest;
     private GoogleMap googleMap;
+
+    // Auto complete
+    private AutoCompleteTextView mAutocompleteTextView;
+    private PlaceArrayAdapter mPlaceArrayAdapter;
+    private static final LatLngBounds BOUNDS_MOUNTAIN_VIEW = new LatLngBounds(
+            new LatLng(37.398160, -122.180831), new LatLng(37.430610, -121.972090));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +87,6 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
 
-        buttonSearch = (Button) findViewById(R.id.buttonSearch);
-
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap map) {
@@ -84,60 +96,104 @@ public class MapsActivity extends AppCompatActivity
 
         configGoogleApiClient();
         configLocationRequest();
+        configAutoCompleteTextView();
 
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-                Log.i(TAG, "Place: " + place.getName());//get place details here
-            }
-
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: " + status);
-            }
-        });
-
-        buttonSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSuggestionPlace();
-            }
-        });
     }
 
-    public void showSuggestionPlace() {  // On button click do this
-        try {
-            Intent intent =
-                    new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                            .build(this);
-            startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-        } catch (GooglePlayServicesRepairableException e) {
-            log("GooglePlayServicesRepairableException");
-            // TODO: Handle the error.
-        } catch (GooglePlayServicesNotAvailableException e) {
-            // TODO: Handle the error.
-            log("GooglePlayServicesNotAvailableException");
+    private void configAutoCompleteTextView() {
+        mAutocompleteTextView = (AutoCompleteTextView) findViewById(R.id
+                .autoCompleteTextView);
+        mAutocompleteTextView.setThreshold(3);
+        mAutocompleteTextView.setTextColor(Color.BLACK);
+        mAutocompleteTextView.setBackgroundColor(Color.WHITE);
+        mAutocompleteTextView.setOnItemClickListener(mAutocompleteClickListener);
+        mPlaceArrayAdapter = new PlaceArrayAdapter(this, android.R.layout.simple_list_item_1,
+                BOUNDS_MOUNTAIN_VIEW, null);
+        mAutocompleteTextView.setAdapter(mPlaceArrayAdapter);
+    }
+
+    private AdapterView.OnItemClickListener mAutocompleteClickListener
+            = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final PlaceArrayAdapter.PlaceAutocomplete item = mPlaceArrayAdapter.getItem(position);
+            final String placeId = String.valueOf(item.placeId);
+            log("Selected: " + item.description);
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                    .getPlaceById(googleApiClient, placeId);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+            log("Fetching details for ID: " + item.placeId);
         }
+    };
+
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback
+            = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(PlaceBuffer places) {
+            if (!places.getStatus().isSuccess()) {
+                log("Place query did not complete. Error: " +
+                        places.getStatus().toString());
+                return;
+            }
+            // Selecting the first object buffer.
+            final Place place = places.get(0);
+            CharSequence attributions = places.getAttributions();
+
+            log("getName:" + place.getName());
+            log("getAddress:" + place.getAddress());
+            log("getId:" + place.getId());
+            log("getPhoneNumber:" + place.getPhoneNumber());
+            log("getWebsiteUri:" + place.getWebsiteUri());
+            String s = (attributions !=null) ? (attributions.toString()) : "";
+            log("attributions:" + s);
+
+
+//            mNameTextView.setText(Html.fromHtml(place.getName() + ""));
+//            mAddressTextView.setText(Html.fromHtml(place.getAddress() + ""));
+//            mIdTextView.setText(Html.fromHtml(place.getId() + ""));
+//            mPhoneTextView.setText(Html.fromHtml(place.getPhoneNumber() + ""));
+//            mWebTextView.setText(place.getWebsiteUri() + "");
+//            if (attributions != null) {
+//                mAttTextView.setText(Html.fromHtml(attributions.toString()));
+//            }
+        }
+    };
+
+
+    private void configGoogleApiClient() {
+        log("configGoogleApiClient");
+
+        googleApiClient = new GoogleApiClient.Builder(this).
+                addConnectionCallbacks(this).
+                addOnConnectionFailedListener(this).
+                addApi(LocationServices.API).
+                // AutoComplete
+                addApi(Places.GEO_DATA_API).
+                enableAutoManage(this, GOOGLE_API_CLIENT_ID, this).
+                build();
+
+        googleApiClient.connect();
+    }
+
+    private void configLocationRequest() {
+        log("configLocationRequest");
+        locationRequest = new LocationRequest();
+        // 設定讀取位置資訊的間隔時間為一秒（1000ms）
+        locationRequest.setInterval(1000);
+        // 設定讀取位置資訊最快的間隔時間為一秒（1000ms）
+        locationRequest.setFastestInterval(1000);
+        // 設定優先讀取高精確度的位置資訊（GPS）
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        enableLocationUpdate();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //disableLocationUpdate();
-    }
-
-    private void enableLocationUpdate() {
     }
 
     /**
@@ -168,7 +224,6 @@ public class MapsActivity extends AppCompatActivity
         // 移動地圖
         moveMap(place);
         addMarker(place, "Hello!", " Google Maps v2!");
-
     }
 
     // 移動地圖到參數指定的位置
@@ -198,31 +253,15 @@ public class MapsActivity extends AppCompatActivity
         googleMap.addMarker(markerOptions);
     }
 
-    private void configGoogleApiClient() {
-        log("configGoogleApiClient");
 
-        googleApiClient = new GoogleApiClient.Builder(this).
-                addConnectionCallbacks(this).
-                addOnConnectionFailedListener(this).
-                addApi(LocationServices.API).
-                build();
-        googleApiClient.connect();
-    }
-
-    private void configLocationRequest() {
-        log("configLocationRequest");
-        locationRequest = new LocationRequest();
-        // 設定讀取位置資訊的間隔時間為一秒（1000ms）
-        locationRequest.setInterval(1000);
-        // 設定讀取位置資訊最快的間隔時間為一秒（1000ms）
-        locationRequest.setFastestInterval(1000);
-        // 設定優先讀取高精確度的位置資訊（GPS）
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         log("onConnected Bundle: " + bundle);
+
+        // Auto complete part
+        mPlaceArrayAdapter.setGoogleApiClient(googleApiClient);
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -272,10 +311,9 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+
     @Override
     public void onConnectionSuspended(int i) {
-        // Google Services連線中斷
-        // int參數是連線中斷的代號
 
     }
 
@@ -310,18 +348,17 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                Log.i(TAG, "Place: " + place.getName());   // fragment return
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
-                Log.i(TAG, status.getStatusMessage());
 
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
-            }
+        if (resultCode == RESULT_OK) {
+            Place place = PlaceAutocomplete.getPlace(this, data);
+            Log.i(TAG, "Place: " + place.getName());   // fragment return
+        } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+            Status status = PlaceAutocomplete.getStatus(this, data);
+            // TODO: Handle the error.
+            Log.i(TAG, status.getStatusMessage());
+
+        } else if (resultCode == RESULT_CANCELED) {
+            // The user canceled the operation.
         }
     }
 
